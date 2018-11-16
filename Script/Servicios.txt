@@ -1,0 +1,136 @@
+CREATE TABLE categoria (
+    idcategoria          INTEGER NOT NULL,
+    "nombre-categoria"   VARCHAR2(100) NOT NULL,
+    precio               VARCHAR2(10),
+    descripcion          VARCHAR2(100),
+    seguros_idseguro     INTEGER NOT NULL
+);
+
+ALTER TABLE categoria ADD CONSTRAINT categoria_pk PRIMARY KEY ( idcategoria );
+
+CREATE TABLE departamento (
+    iddepartamento   INTEGER NOT NULL,
+    nombre           VARCHAR2(100),
+    municipio        VARCHAR2(100),
+    direccion        VARCHAR2(100)
+);
+
+ALTER TABLE departamento ADD CONSTRAINT departamento_pk PRIMARY KEY ( iddepartamento );
+
+CREATE TABLE empleados (
+    idempleados                     INTEGER NOT NULL,
+    nombres                         VARCHAR2(100) NOT NULL,
+    apellidos                       VARCHAR2(100) NOT NULL,
+    direccion                       VARCHAR2(100),
+    celular                         VARCHAR2(100),
+    correo                          VARCHAR2(100) NOT NULL,
+    sedes_idsede                    INTEGER NOT NULL,
+    especialidades_idespecialidad   INTEGER NOT NULL
+);
+
+ALTER TABLE empleados ADD CONSTRAINT empleados_pk PRIMARY KEY ( idempleados );
+
+CREATE TABLE enfermedades (
+    idenfermedad   INTEGER NOT NULL,
+    nombre         VARCHAR2(100) NOT NULL,
+    sintomas       VARCHAR2(100),
+    descripcion    VARCHAR2(100)
+);
+
+ALTER TABLE enfermedades ADD CONSTRAINT enfermedades_pk PRIMARY KEY ( idenfermedad );
+
+CREATE TABLE especialidades (
+    idespecialidad           INTEGER NOT NULL,
+    nombre                   VARCHAR2(100) NOT NULL,
+    "detalle-especialidad"   VARCHAR2(100)
+);
+
+ALTER TABLE especialidades ADD CONSTRAINT especialidades_pk PRIMARY KEY ( idespecialidad );
+
+CREATE TABLE expedientes (
+    idexpediente               INTEGER NOT NULL,
+    estado                     VARCHAR2(100) NOT NULL,
+    "enfermedades-padecidas"   VARCHAR2(100) NOT NULL,
+    "enfermedad-actual"        VARCHAR2(100) NOT NULL,
+    "fecha-ingreso"            DATE,
+    "hora-ingreso"             DATE,
+    "hora-egreso"              DATE,
+    pacientes_idpaciente       INTEGER NOT NULL,
+    pacientes_idsede           INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX expedientes__idx ON
+    expedientes (
+        pacientes_idpaciente
+    ASC,
+        pacientes_idsede
+    ASC );
+
+ALTER TABLE expedientes ADD CONSTRAINT expedientes_pk PRIMARY KEY ( idexpediente );
+
+CREATE TABLE pacientes (
+    idpaciente                  INTEGER NOT NULL,
+    nombres                     VARCHAR2(100) NOT NULL,
+    apellidos                   VARCHAR2(100),
+    telefono                    VARCHAR2(100),
+    edad                        INTEGER,
+    genero                      VARCHAR2(100) NOT NULL,
+    sedes_idsede                INTEGER NOT NULL,
+    seguros_idseguro            INTEGER NOT NULL,
+    enfermedades_idenfermedad   INTEGER NOT NULL
+);
+
+ALTER TABLE pacientes ADD CONSTRAINT pacientes_pk PRIMARY KEY ( idpaciente,
+                                                                sedes_idsede );
+
+CREATE TABLE sedes (
+    idsede                        INTEGER NOT NULL,
+    nombre                        VARCHAR2(100) NOT NULL,
+    telefono                      VARCHAR2(12),
+    descripcion                   VARCHAR2(100),
+    departamento_iddepartamento   INTEGER NOT NULL
+);
+
+ALTER TABLE sedes ADD CONSTRAINT sedes_pk PRIMARY KEY ( idsede );
+
+CREATE TABLE seguros (
+    idseguro          INTEGER NOT NULL,
+    "nombre-seguro"   VARCHAR2(100) NOT NULL,
+    descripcion       VARCHAR2(100)
+);
+
+ALTER TABLE seguros ADD CONSTRAINT seguros_pk PRIMARY KEY ( idseguro );
+
+ALTER TABLE categoria
+    ADD CONSTRAINT categoria_seguros_fk FOREIGN KEY ( seguros_idseguro )
+        REFERENCES seguros ( idseguro );
+
+ALTER TABLE empleados
+    ADD CONSTRAINT empleados_especialidades_fk FOREIGN KEY ( especialidades_idespecialidad )
+        REFERENCES especialidades ( idespecialidad );
+
+ALTER TABLE empleados
+    ADD CONSTRAINT empleados_sedes_fk FOREIGN KEY ( sedes_idsede )
+        REFERENCES sedes ( idsede );
+
+ALTER TABLE expedientes
+    ADD CONSTRAINT expedientes_pacientes_fk FOREIGN KEY ( pacientes_idpaciente,
+                                                          pacientes_idsede )
+        REFERENCES pacientes ( idpaciente,
+                               sedes_idsede );
+
+ALTER TABLE pacientes
+    ADD CONSTRAINT pacientes_enfermedades_fk FOREIGN KEY ( enfermedades_idenfermedad )
+        REFERENCES enfermedades ( idenfermedad );
+
+ALTER TABLE pacientes
+    ADD CONSTRAINT pacientes_sedes_fk FOREIGN KEY ( sedes_idsede )
+        REFERENCES sedes ( idsede );
+
+ALTER TABLE pacientes
+    ADD CONSTRAINT pacientes_seguros_fk FOREIGN KEY ( seguros_idseguro )
+        REFERENCES seguros ( idseguro );
+
+ALTER TABLE sedes
+    ADD CONSTRAINT sedes_departamento_fk FOREIGN KEY ( departamento_iddepartamento )
+        REFERENCES departamento ( iddepartamento );
